@@ -226,7 +226,7 @@ const CreateProduct = ({fetchDashboardData}) => {
 
             <form onSubmit={handleCsvUpload} className="space-y-4">
               <p className="text-sm text-gray-600 mb-3">
-                  O arquivo deve conter as informações: nome, preço, descrição e url da imagem.
+                  O arquivo deve conter as informações: nome, descrição, preço, estoque e url da imagem (sem cabeçalho).
               </p>
               <label className="block">
                 <span className="sr-only">Escolher arquivo CSV</span>

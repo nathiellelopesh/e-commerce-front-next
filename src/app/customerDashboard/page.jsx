@@ -4,6 +4,9 @@ import Header from '../../components/header/header.jsx'
 import ConfirmationModal from '../../components/confirmationModel/confirmationModel.jsx';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import PaginationControls from '../../components/renderPaginationControls/renderPaginationControls.jsx'
+import { CartProvider } from '../../context/cartContext.jsx';
+import { ShoppingCart, Heart, ShoppingBag } from 'lucide-react';
+import Button from '../../components/button/button.jsx';
 
 const API_BASE_URL = '/api';
 const API_PRODUCTS_URL = `${API_BASE_URL}/products`;
@@ -25,7 +28,6 @@ const customerDashboard = () => {
     const [authActionMessage, setAuthActionMessage] = useState('');
     const [products, setProducts] = useState([]);
     const [modalState, setModalState] = useState(initialModalState);
-    const [loadingMetrics, setLoadingMetrics] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
 
@@ -182,17 +184,6 @@ const customerDashboard = () => {
         return products.filter(product => 
             product.name && product.name.toLowerCase().includes(lowerCaseSearch)
         );
-        /*
-        if (!searchTerm) {
-            return products;
-        }
-
-        const lowerCaseSearch = searchTerm.toLowerCase();
-
-        return products.filter(product => 
-            product.name && product.name.toLowerCase().includes(lowerCaseSearch)
-        );
-        */
     }, [products, searchTerm]);
 
     const indexOfLastProduct = currentPage * PRODUCTS_PER_PAGE;
@@ -232,75 +223,107 @@ const customerDashboard = () => {
     const isFilteredListEmpty = filteredProducts.length === 0;
 
     return (
-        <div className="min-h-screen bg-gray-100 p-4 sm:p-8">
-            <Header userId={userId} onOpenModal={openModal} /> 
-            
-            {authActionMessage && (
-                 <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" role="alert">
-                    <p>{authActionMessage}</p>
+        <CartProvider>
+            <div className="min-h-screen bg-gray-100 p-4 sm:p-8">
+                <Header userId={userId} onOpenModal={openModal} /> 
+                
+                {authActionMessage && (
+                    <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" role="alert">
+                        <p>{authActionMessage}</p>
+                    </div>
+                )}
+
+                <div className="flex justify-end space-x-4 mb-8">
+                    <Button
+                        onClick={() => window.location.href = '/cart'}
+                        className="cursor-pointer flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition duration-150 shadow-md"
+
+                        content={
+                            <>
+                            <ShoppingCart/>
+                            <span>Ver Carrinho</span>
+                            </>
+                        }
+                    />
+
+                    <Button
+                        onClick={() => window.location.href = '/favorites'}
+                        className="cursor-pointer flex items-center space-x-2 bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-300 transition duration-150 shadow-md"
+
+                        content={
+                            <>
+                            <Heart/>
+                            <span>Ver Favoritos</span>
+                            </>
+                        }
+                    />
+
+                    <Button
+                        onClick={() => window.location.href = '/purchaseHistory'}
+                        className="cursor-pointer flex items-center space-x-2 bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-300 transition duration-150 shadow-md"
+
+                        content={
+                            <>
+                            <ShoppingBag/>
+                            <span>Ver Histórico de compras</span>
+                            </>
+                        }
+                    />
                 </div>
-            )}
 
-            <h1 className="text-4xl font-extrabold text-gray-900 mb-8 border-b pb-2">
-                Descubra Todos os Produtos
-            </h1>
+                <h1 className="text-4xl font-extrabold text-gray-900 mb-8 border-b pb-2">
+                    Descubra Todos os Produtos
+                </h1>
 
-            <div className="mb-8 p-4 bg-white rounded-lg shadow-md">
-                <label htmlFor="search" className="block text-lg font-medium text-gray-700 mb-2">
-                    Buscar Produtos por Nome
-                </label>
-                <input
-                    type="text"
-                    id="search"
-                    className="w-full text-gray-900 p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150"
-                    placeholder="Digite o nome do produto..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                <div className="mb-8 p-4 bg-white rounded-lg shadow-md">
+                    <label htmlFor="search" className="block text-lg font-medium text-gray-700 mb-2">
+                        Buscar Produtos por Nome
+                    </label>
+                    <input
+                        type="text"
+                        id="search"
+                        className="w-full text-gray-900 p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150"
+                        placeholder="Digite o nome do produto..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+                
+                {isFilteredListEmpty ? (
+                    <div className="text-center mt-10 p-4 border border-gray-300 rounded-lg bg-white shadow">
+                        <p className="text-xl text-gray-600">
+                            {searchTerm 
+                                ? `Nenhum produto encontrado com o nome "${searchTerm}".` 
+                                : 'Nenhum produto cadastrado no momento.'}
+                        </p>
+                    </div>
+                ) : (
+                    <div className="flex flex-wrap justify-center gap-6">
+                        {currentProducts.map((product) => (
+                            <ProductCard
+                                key={product.id}
+                                product={product}
+                            /> 
+                        ))}
+                    </div>
+                )}
+                <PaginationControls 
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    paginate={paginate}
+                />
+
+                <ConfirmationModal
+                    isOpen={modalState.isOpen}
+                    onClose={() => setModalState(initialModalState)}
+                    onConfirm={handleModalConfirm}
+                    title={modalState.title}
+                    message={modalState.message}
+                    confirmText={modalState.confirmText}
+                    isDestructive={modalState.isDestructive}
                 />
             </div>
-
-            <PaginationControls 
-                currentPage={currentPage}
-                totalPages={totalPages}
-                paginate={paginate}
-            />
-            
-            {isFilteredListEmpty ? (
-                <div className="text-center mt-10 p-4 border border-gray-300 rounded-lg bg-white shadow">
-                    <p className="text-xl text-gray-600">
-                        {searchTerm 
-                            ? `Nenhum produto encontrado com o nome "${searchTerm}".` 
-                            : 'Nenhum produto cadastrado no momento.'}
-                    </p>
-                </div>
-            ) : (
-                <div className="flex flex-wrap justify-center gap-6">
-                    {currentProducts.map((product) => (
-                        <ProductCard
-                            key={product.id}
-                            product={product}
-                        /> 
-                    ))}
-                </div>
-            )}
-            
-            {/* 💡 Novo Componente de Paginação - Rodapé */}
-            <PaginationControls 
-                currentPage={currentPage}
-                totalPages={totalPages}
-                paginate={paginate}
-            />
-
-            <ConfirmationModal
-                isOpen={modalState.isOpen}
-                onClose={() => setModalState(initialModalState)}
-                onConfirm={handleModalConfirm}
-                title={modalState.title}
-                message={modalState.message}
-                confirmText={modalState.confirmText}
-                isDestructive={modalState.isDestructive}
-            />
-        </div>
+        </CartProvider>
     );
 };
 

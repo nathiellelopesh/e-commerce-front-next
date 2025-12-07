@@ -1,8 +1,7 @@
 "use client"; 
 
-import Link from 'next/link';
 import { useState, useEffect, useCallback } from 'react';
-import { Package, DollarSign, BarChart2, TrendingUp, Upload, Send, LogOut, Trash2, X } from 'lucide-react';
+import { Package, DollarSign, BarChart2, TrendingUp, CirclePlus } from 'lucide-react';
 import Button from '../../components/button/button.jsx'
 import Header from '../../components/header/header.jsx'
 import MetricCard from '../../components/metricCard/metricCard.jsx';
@@ -13,6 +12,7 @@ const API_BASE_URL = '/api';
 const API_PRODUCTS_URL = `${API_BASE_URL}/products`;
 const API_LOGOUT_URL = `${API_BASE_URL}/users/logout`;
 const API_DEACTIVATE_URL = `${API_BASE_URL}/users/deactivate`;
+const API_METRICS_URL = `${API_BASE_URL}/metrics`;
 
 const initialModalState = {
     isOpen: false,
@@ -40,7 +40,6 @@ const SellerDashboard = () => {
   const [dashboardData, setDashboardData] = useState({
     totalSales: 0,
     totalRevenue: 0,
-    totalProducts: 0,
     bestSellingProduct: '',
   });
 
@@ -93,6 +92,34 @@ const SellerDashboard = () => {
         });
     }
   }, [products]);
+
+  const fetchMetrics = useCallback(async () => {
+          if (!accessToken) return;
+          try {
+              const response = await fetch(API_METRICS_URL, {
+                  headers: {
+                      'Authorization': `Bearer ${accessToken}` 
+                  }
+              });
+              if (!response.ok) {
+                  throw new Error('Falha ao carregar dados. Token inválido ou expirado.');
+              }
+      
+              const data = await response.json();
+              console.log(data)
+              
+              setDashboardData({
+                  totalSales: data.productsBySeller.reduce((sum, seller) => sum + seller.total_sold, 0),
+                  totalRevenue: data.totalRevenue,
+                  totalProducts: products.length,
+                  bestSellingProduct: data.bestSeller ? data.bestSeller.product_name : 'N/A',
+              });
+              console.log(dashboardData)
+
+          } catch (error) {
+              setAuthActionMessage(`Erro ao carregar dados: ${error.message}. Faça login novamente.`);
+          }
+  }, [accessToken])
 
   const fetchDashboardData = useCallback(async () => {
     setLoadingMetrics(true);
@@ -235,7 +262,8 @@ const SellerDashboard = () => {
       return; 
     }
     fetchDashboardData();
-  }, [fetchDashboardData, userId]);
+    fetchMetrics();
+  }, [fetchDashboardData, fetchMetrics, userId]);
 
   const [isClient, setIsClient] = useState(false);
 
@@ -272,24 +300,30 @@ const SellerDashboard = () => {
                 {authActionMessage}
             </div>
       )}
+      <div className="flex justify-end space-x-4 mb-8">
+        <Button
+          onClick={() => window.location.href = '/createProduct'}
+          className="cursor-pointer flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition duration-150 shadow-md"
+          content={
+            <>
+              <CirclePlus/>
+              <span>Adicionar Produto</span>
+            </>
+          }
+        />
 
-      <Link 
-          href="/createProduct" 
-          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-        >
-          Adicionar Produto
-      </Link>
+      </div>
 
       <section className="mb-10">
         <h2 className="text-2xl font-semibold text-gray-800 mb-4">Métricas Principais</h2>
-        {loadingMetrics ? (
+        {!dashboardData ? (
           <div className="text-center p-8 bg-white rounded-lg shadow">Carregando métricas...</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <MetricCard 
               icon={DollarSign} 
               title="Faturamento Total" 
-              value={dashboardData.totalRevenue} 
+              value={`R$ ${dashboardData.totalRevenue ? dashboardData.totalRevenue.toFixed(2) : '0.00'}`} 
               color="green" 
             />
             <MetricCard 

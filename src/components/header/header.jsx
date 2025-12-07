@@ -20,7 +20,7 @@ const DashboardHeader = ({ userId, onOpenModal }) => {
           <button
             onClick={() => onOpenModal('deactivate')} 
             type="button" 
-            className="flex items-center px-3 py-2 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition duration-150"
+            className="cursor-pointer flex items-center px-3 py-2 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition duration-150"
             title="Desativar Conta"
           >
             <Trash2 className="w-4 h-4 mr-1" />
@@ -30,7 +30,7 @@ const DashboardHeader = ({ userId, onOpenModal }) => {
           <button
             onClick={() => onOpenModal('logout')} 
             type="button"
-            className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition duration-150"
+            className="cursor-pointer flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition duration-150"
             title="Sair da Conta"
           >
             <LogOut className="w-4 h-4 mr-1" />

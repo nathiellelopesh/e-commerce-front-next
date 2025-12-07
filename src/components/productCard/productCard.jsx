@@ -1,10 +1,34 @@
-
 import Image from 'next/image';
 import Button from '../button/button';
+import { useCart } from '../../context/cartContext';
+import { Heart } from 'lucide-react';
+import { useFavorites } from '../../context/favoriteContext';
 
 const ProductCard = ({ product, onDelete }) => {
+  const { addToCart } = useCart();
+  const { toggleFavorite, checkIsFavorite } = useFavorites();
+  const isFavorite = checkIsFavorite(product.id);
+
+  const handleAddToCart = () => {
+    addToCart(product);
+    alert(`${product.name} adicionado ao carrinho!`);
+  };
+
+  const handleToggleFavorite = () => {
+    toggleFavorite(product.id);
+  };
+
   return (
     <div className="border rounded-lg shadow-md p-4 w-64 m-4 transition transform hover:scale-105">
+      <div className="flex justify-end">
+        <Heart 
+          className={`
+            w-6 h-6 cursor-pointer transition-colors 
+            ${isFavorite ? 'text-red-500 fill-red-500' : 'text-gray-400'}
+          `}
+          onClick={handleToggleFavorite}
+        />
+      </div>
       {product.image && (
           <img 
             src={product.image} 
@@ -23,7 +47,8 @@ const ProductCard = ({ product, onDelete }) => {
         
         <Button
           content={"Adicionar ao carrinho"}
-          className={"w-full py-3 px-4 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 transition duration-200 disabled:bg-purple-400"}
+          onClick={handleAddToCart}
+          className={"cursor-pointer w-full py-3 px-4 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 transition duration-200 disabled:bg-purple-400"}
         />
       </div>
     </div>

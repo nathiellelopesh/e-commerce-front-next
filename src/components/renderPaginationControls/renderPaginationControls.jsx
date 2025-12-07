@@ -21,7 +21,7 @@ const renderPaginationControls = ({ currentPage, totalPages, paginate }) => {
                 <button
                     onClick={() => paginate(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className={`px-4 py-2 border rounded-lg transition duration-300 ${currentPage === 1 ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-blue-500 hover:bg-blue-500 hover:text-white border-blue-500'}`}
+                    className={`cursor-pointer px-4 py-2 border rounded-lg transition duration-300 ${currentPage === 1 ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-blue-500 hover:bg-blue-500 hover:text-white border-blue-500'}`}
                 >
                     Anterior
                 </button>
@@ -30,7 +30,7 @@ const renderPaginationControls = ({ currentPage, totalPages, paginate }) => {
                     <button
                         key={number}
                         onClick={() => paginate(number)}
-                        className={`px-4 py-2 border rounded-lg font-semibold transition duration-300 ${number === currentPage ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-blue-500 hover:bg-blue-100 border-gray-300'}`}
+                        className={`cursor-pointer px-4 py-2 border rounded-lg font-semibold transition duration-300 ${number === currentPage ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-blue-500 hover:bg-blue-100 border-gray-300'}`}
                     >
                         {number}
                     </button>
@@ -39,7 +39,7 @@ const renderPaginationControls = ({ currentPage, totalPages, paginate }) => {
                 <button
                     onClick={() => paginate(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className={`px-4 py-2 border rounded-lg transition duration-300 ${currentPage === totalPages ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-blue-500 hover:bg-blue-500 hover:text-white border-blue-500'}`}
+                    className={`cursor-pointer px-4 py-2 border rounded-lg transition duration-300 ${currentPage === totalPages ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-blue-500 hover:bg-blue-500 hover:text-white border-blue-500'}`}
                 >
                     Próxima
                 </button>

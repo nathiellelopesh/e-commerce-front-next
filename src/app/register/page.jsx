@@ -63,6 +63,11 @@ const Register = () => {
             setEmail('');
             setPassword('');
             setRole('client');
+            if (role === 'seller') {
+              window.location.href = '/sellerDashboard';
+            } else {
+              window.location.href = '/customerDashboard';
+            }
         } else {
             setMessage(responseData.message || 'Falha no registro. Tente novamente.');
             setIsError(true);
