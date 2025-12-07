@@ -7,7 +7,7 @@ const DashboardHeader = ({ userId, onOpenModal }) => {
       <div className="flex justify-between items-center max-w-7xl mx-auto">
         <div className="flex items-center space-x-4">
           <h1 className="text-2xl font-bold text-indigo-700 hidden sm:block">
-            Dashboard
+            Bem-vindo
           </h1>
           {userId && (
               <span className="text-sm text-gray-500 truncate">

@@ -30,6 +30,7 @@ const customerDashboard = () => {
     const [modalState, setModalState] = useState(initialModalState);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
+    const [manualMessage, setManualMessage] = useState('');
 
     const PRODUCTS_PER_PAGE = 12;
 
@@ -271,6 +272,12 @@ const customerDashboard = () => {
                     />
                 </div>
 
+                {manualMessage && (
+                    <div className={`p-3 text-sm rounded-lg mb-4 ${manualMessage.startsWith('Erro') ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                        {manualMessage}
+                    </div>
+                )}
+
                 <h1 className="text-4xl font-extrabold text-gray-900 mb-8 border-b pb-2">
                     Descubra Todos os Produtos
                 </h1>
@@ -303,6 +310,7 @@ const customerDashboard = () => {
                             <ProductCard
                                 key={product.id}
                                 product={product}
+                                setManualMessage={setManualMessage}
                             /> 
                         ))}
                     </div>

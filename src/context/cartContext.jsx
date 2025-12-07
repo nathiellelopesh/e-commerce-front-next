@@ -166,8 +166,6 @@ export const CartProvider = ({ children }) => {
                 }
             });
 
-            alert(`${product.name} adicionado/atualizado no carrinho!`);
-
         } catch (error) {
             console.error("Erro ao adicionar ao carrinho:", error);
             alert(`Erro ao adicionar ao carrinho: ${error.message}`);

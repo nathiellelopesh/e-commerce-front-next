@@ -1,27 +1,28 @@
 "use client"; 
 
 import Button from '../../components/button/button.jsx'
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { Send, Upload } from 'lucide-react';
 import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
 
 const CreateProduct = ({fetchDashboardData}) => {
-    // cadastro manual
-      const [newProduct, setNewProduct] = useState({
+    const [newProduct, setNewProduct] = useState({
         name: '',
         price: '',
         description: '',
         image: '',
         stock: ''
-      });
+    });
     
-      // Upload de CSV
-      const [csvFile, setCsvFile] = useState(null);
-      const [csvUploadMessage, setCsvUploadMessage] = useState('');
-      const [manualMessage, setManualMessage] = useState('');
+    // Upload de CSV
+    const [csvFile, setCsvFile] = useState(null);
+    const [csvUploadMessage, setCsvUploadMessage] = useState('');
+    const [manualMessage, setManualMessage] = useState('');
 
-      const handleManualSubmit = useCallback(async (e) => {
+    const csvFileInputRef = useRef(null);
+
+    const handleManualSubmit = useCallback(async (e) => {
         e.preventDefault();
         const token = localStorage.getItem('accessToken');
 
@@ -31,104 +32,97 @@ const CreateProduct = ({fetchDashboardData}) => {
         }
         
         const response = await fetch('/api/products', {
-          method: 'POST',
-          headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          },
-          body: JSON.stringify({...newProduct, price: parseFloat(newProduct.price)}),
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({...newProduct, price: parseFloat(newProduct.price)}),
         });
         if (response.ok) {
-          setManualMessage('Sucesso: Produto cadastrado com sucesso!');
-          setNewProduct({
-            name: '',
-            price: '',
-            description: '',
-            image: '',
-            stock: 0
-          });
+            setManualMessage('Sucesso: Produto cadastrado com sucesso!');
+            setNewProduct({
+                name: '',
+                price: '',
+                description: '',
+                image: '',
+                stock: 0
+            });
         } else {
-          const errorData = await response.json().catch(() => ({ message: response.statusText }));
-          const errorMessage = errorData.message || 'Falha desconhecida. Verifique o console ou o servidor.';
-          setManualMessage(`Erro: Falha ao cadastrar o produto. Detalhe: ${errorMessage}`);
+            const errorData = await response.json().catch(() => ({ message: response.statusText }));
+            const errorMessage = errorData.message || 'Falha desconhecida. Verifique o console ou o servidor.';
+            setManualMessage(`Erro: Falha ao cadastrar o produto. Detalhe: ${errorMessage}`);
         }
 
         if (fetchDashboardData) { 
-             fetchDashboardData();
+            fetchDashboardData();
         }
 
-      }, [newProduct, fetchDashboardData]);
-    
-      const handleCsvUpload = useCallback(async (e) => {
+    }, [newProduct, fetchDashboardData]);
+
+    const handleCsvUpload = useCallback(async (e) => {
         e.preventDefault();
-        setCsvUploadMessage('Carregando arquivo CSV...');
+        setCsvUploadMessage('Processando upload do arquivo CSV...');
 
         const token = localStorage.getItem('accessToken');
 
         if (!token) {
-          setCsvUploadMessage('Erro: Não autorizado. Por favor, faça login novamente.');
-          return;
+            setCsvUploadMessage('Erro: Não autorizado. Por favor, faça login novamente.');
+            return;
         }
 
         if (!csvFile) {
-          setCsvUploadMessage('Erro: Por favor, selecione um arquivo CSV para upload.');
-          return;
+            setCsvUploadMessage('Erro: Por favor, selecione um arquivo CSV para upload.');
+            return;
         }
 
         const formData = new FormData();
-        formData.append('file', csvFile);
+        formData.append('file', csvFile); 
 
         try {
-          const response = await fetch('/api/products/upload-csv', {
-            method: 'POST',
-            headers: {'Authorization': `Bearer ${token}`},
-            body: formData
-          });
+            const response = await fetch('/api/products/upload-csv', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: formData
+            });
 
-          let responseData = {};
-          let errorMessage = `Erro ${response.status}: ${response.statusText}.`;
+            let responseData = {};
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+                responseData = await response.json().catch(() => ({}));
+            }
+            
+            if (response.ok) {
+                const successMessage = responseData.message || 'Produtos do CSV carregados com sucesso!';
+                setCsvUploadMessage(`Sucesso: ${successMessage}`);
+                
+                setCsvFile(null);
+                if (csvFileInputRef.current) {
+                    csvFileInputRef.current.value = "";
+                }
 
-          const contentType = response.headers.get("content-type");
-          if (contentType && contentType.includes("application/json")) {
-            try {
-              responseData = await response.json(); 
-            } catch (e) {
-              responseData = { message: `Erro ${response.status}: O servidor retornou JSON, mas está mal formatado.` };
-            }
-            
-            errorMessage = responseData.message || errorMessage;
+                if (fetchDashboardData) {
+                    setTimeout(fetchDashboardData, 500); 
+                }
+            } else {
+                const errorMessage = responseData.message || `Erro ${response.status} (${response.statusText}). Verifique o formato do arquivo.`;
+                setCsvUploadMessage(`Erro: Falha no upload: ${errorMessage}`);
+            }
 
-          } else if (response.status === 401) {
-            errorMessage = 'Não autorizado. Seu token pode ter expirado. Faça login novamente.';
-          } else if (response.status === 404) {
-            errorMessage = 'A rota de upload do CSV não foi encontrada no servidor.';
-          } else if (!response.ok) {
-            errorMessage = `Erro ${response.status} (${response.statusText}). O servidor retornou um corpo inesperado.`;
-          }
+        } catch (error) {
+           setCsvUploadMessage(`Erro de conexão: ${error.message}. Verifique sua rede e tente novamente.`);
+        }
 
-          if (response.ok) {
-            setCsvUploadMessage(`Sucesso: Produtos carregados com sucesso!'`);
-            setCsvFile(null);
-          } else {
-            setCsvUploadMessage(`Erro: Falha no upload: ${errorMessage}`);
-          }
-
-        } catch (error) {
-          setCsvUploadMessage(`Erro de conexão: ${error.message}. Tente novamente.`);
-        }
-
-        if (fetchDashboardData) {
-          fetchDashboardData();
-        }
-
-      }, [csvFile, fetchDashboardData]);
+    }, [csvFile, fetchDashboardData]);
     
-      const handleInputChange = (e) => {
+    const handleInputChange = (e) => {
         setNewProduct({
-          ...newProduct,
-          [e.target.name]: e.target.value,
+            ...newProduct,
+            [e.target.name]: e.target.value,
         });
-      };
+    };
 
       return (
         <div className="min-h-screen bg-gray-100 p-4 sm:p-8">
@@ -233,6 +227,7 @@ const CreateProduct = ({fetchDashboardData}) => {
                 <input 
                   type="file" 
                   accept=".csv"
+                  ref={csvFileInputRef}
                   onChange={(e) => setCsvFile(e.target.files?.[0] || null)}
                   className="block w-full text-sm text-gray-500
                     file:mr-4 file:py-2 file:px-4

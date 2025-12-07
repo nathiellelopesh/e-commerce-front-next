@@ -8,6 +8,7 @@ const CartPage = ({ onOpenModal }) => {
     const [userId, setUserId] = useState('');
     const [accessToken, setAccessToken] = useState('');
     const [authActionMessage, setAuthActionMessage] = useState('');
+    const [manualMessage, setManualMessage] = useState('');
 
     const { 
         cartItems, 
@@ -33,11 +34,11 @@ const CartPage = ({ onOpenModal }) => {
 
     const handleCheckout = useCallback(async () => {
         if (cartItems.length === 0) {
-            setAuthActionMessage('O carrinho está vazio. Adicione produtos antes de finalizar.');
+            setManualMessage('O carrinho está vazio. Adicione produtos antes de finalizar.');
             return;
         }
 
-        setAuthActionMessage('Processando compra...');
+        setManualMessage('Processando compra...');
         
         const itemsToSell = cartItems.map(item => ({
             product_id: item.product_id,
@@ -48,10 +49,10 @@ const CartPage = ({ onOpenModal }) => {
             const result = await checkout(userId, itemsToSell);
 
             if (result) {
-                setAuthActionMessage('🎉 Compra finalizada com sucesso! Redirecionando...');
+                setManualMessage('🎉 Compra finalizada com sucesso!');
                 fetchCart(); 
             } else {
-                setAuthActionMessage('Falha ao finalizar a compra. Verifique o console.');
+                setManualMessage('Falha ao finalizar a compra. Verifique o console.');
             }
         } catch (e) {
             setAuthActionMessage(`Erro crítico: ${e.message}`);
@@ -82,6 +83,12 @@ const CartPage = ({ onOpenModal }) => {
             <h1 className="text-4xl font-extrabold text-gray-900 mb-8 border-b pb-2">
                 Seu Carrinho de Compras
             </h1>
+
+            {manualMessage && (
+                <div className={`p-3 text-sm rounded-lg mb-4 ${manualMessage.startsWith('Erro') ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                    {manualMessage}
+                </div>
+            )}
 
             {cartItems.length === 0 ? (
                 <div className="text-center mt-16 p-6 bg-white rounded-lg shadow-md">

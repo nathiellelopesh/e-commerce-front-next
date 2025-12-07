@@ -360,14 +360,12 @@ const SellerDashboard = () => {
         <ConfirmationModal
             isOpen={modalState.isOpen}
             onClose={() => setModalState(initialModalState)}
-            //onClose={() => setModalState({ ...prev, isOpen: false, action: null, productId: null })}
             onConfirm={handleModalConfirm}
             title={modalState.title}
             message={modalState.message}
             confirmText={modalState.confirmText}
             isDestructive={modalState.isDestructive}
             onCancel={() => setModalState(initialModalState)}
-            //onCancel={() => setModalState({ ...prev, isOpen: false, action: null, productId: null })}
         />
       )}
 

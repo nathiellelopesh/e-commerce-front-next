@@ -4,14 +4,14 @@ import { useCart } from '../../context/cartContext';
 import { Heart } from 'lucide-react';
 import { useFavorites } from '../../context/favoriteContext';
 
-const ProductCard = ({ product, onDelete }) => {
+const ProductCard = ({ product, setManualMessage }) => {
   const { addToCart } = useCart();
   const { toggleFavorite, checkIsFavorite } = useFavorites();
   const isFavorite = checkIsFavorite(product.id);
 
   const handleAddToCart = () => {
     addToCart(product);
-    alert(`${product.name} adicionado ao carrinho!`);
+    setManualMessage(`Sucesso: "${product.name}" foi adicionado ao carrinho.`);
   };
 
   const handleToggleFavorite = () => {
