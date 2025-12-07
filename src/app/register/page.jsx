@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Shield, Mail, Lock, User, Store } from 'lucide-react';
+import Link from 'next/link';
+import { ChevronLeft } from 'lucide-react';
 
 const API_REGISTER_URL = '/api/users/register';
 
@@ -85,7 +87,13 @@ const Register = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white shadow-2xl rounded-xl p-8 space-y-6">
-        
+        <Link 
+            href="/"
+            className="flex items-center text-gray-600 hover:text-indigo-600 transition-colors"
+          >
+            <ChevronLeft className="w-5 h-5 mr-1" />
+            Voltar
+        </Link>
         <div className="flex flex-col items-center">
           <Shield className="w-12 h-12 text-indigo-600 mb-2" />
           <h2 className="text-3xl font-extrabold text-gray-900">
